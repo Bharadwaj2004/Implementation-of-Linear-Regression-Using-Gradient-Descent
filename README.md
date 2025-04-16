@@ -8,106 +8,73 @@ To write a program to predict the profit of a city using the linear regression m
 2. Anaconda – Python 3.7 Installation / Jupyter notebook
 
 ## Algorithm
-1. Startv the program.
-2. import numpy as np.
-3. Give the header to the data.
-4. Find the profit of population.
-5. Plot the required graph for both for Gradient Descent Graph and Prediction Graph.
-6. End the program.
-
+1. Load the dataset and separate features (R&D, Admin, Marketing) and target (Profit).
+2. Scale features and target using StandardScaler for better gradient descent performance.
+3. Train the model using gradient descent to minimize the cost function.
+4. Use the trained model to make predictions for new input data.
+5. Inverse scale the predicted profit to get the final output in the original scale.
+6. 
 ## Program:
 ```
-/*
-Program to implement the linear regression using gradient descent.
-Developed by: B.venkata bharadwaj
-RegisterNumber: 212222240020
+
+# Program to implement the linear regression using gradient descent.
+# Developed by: VENKATA BHARADWAJ.B
+# Register Number: 212222240020
 
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
+from sklearn.preprocessing import StandardScaler
 
+# Linear Regression using Gradient Descent
+def linear_regression(features, target, learning_rate=0.01, num_iters=1000):
+    X = np.c_[np.ones(len(features)), features]  
+    theta = np.zeros((X.shape[1], 1))  
+    for _ in range(num_iters):
+        predictions = X.dot(theta)
+        errors = predictions - target
+        theta -= (learning_rate / len(features)) * X.T.dot(errors)
+    return theta
 
-data=pd.read_csv("/content/ex1.txt",header=None)
+# Reading the dataset
+data = pd.read_csv('/content/50_Startups (2).csv')
 
-plt.scatter(data[0],data[1])
-plt.xticks(np.arange(5,30,step=5))
-plt.yticks(np.arange(-5,30,step=5))
-plt.xlabel("Population of city (10,000s)")
-plt.ylabel("Profit ($10,000")
-plt.title("Profit Predication")
+# Extracting input features (R&D Spend, Administration, Marketing Spend)
+features = data[['R&D Spend', 'Administration', 'Marketing Spend']].values
 
-def computeCost(x,y,theta):
-  m=len(y)
-  h=x.dot(theta)
-  square_err=(h-y)**2
-  return 1/(2*m)*np.sum(square_err)
-  
-data_n=data.values
-m=data_n[:,0].size
-x=np.append(np.ones((m,1)),data_n[:,0].reshape(m,1),axis=1)
-y=data_n[:,1].reshape(m,1)
-theta=np.zeros((2,1))
-computeCost(x,y,theta)
+# Converting to float
+features = features.astype(float)
 
-def gradientDescent(x,y,theta,alpha,num_iters):
-  m=len(y)
-  J_history=[]
-  for i in range(num_iters):
-    predictions=x.dot(theta)
-    error=np.dot(x.transpose(),(predictions-y))
-    descent=alpha*1/m*error
-    theta-=descent
-    J_history.append(computeCost(x,y,theta))
-  return theta,J_history
-  
-theta,J_history = gradientDescent(x,y,theta,0.01,1500)
-print("h(x) ="+str(round(theta[0,0],2))+" + "+str(round(theta[1,0],2))+"x1")
+# Extracting target output (Profit)
+profit = data[['Profit']].values
 
-plt.plot(J_history)
-plt.xlabel("Iteration")
-plt.ylabel("$J(\Theta)$")
-plt.title("Cost function using Gradient Descent")
+# Feature scaling
+feature_scaler = StandardScaler()
+profit_scaler = StandardScaler()
 
+scaled_features = feature_scaler.fit_transform(features)
+scaled_profit = profit_scaler.fit_transform(profit)
 
-plt.scatter(data[0],data[1])
-x_value=[x for x in range(25)]
-y_value=[y*theta[1]+theta[0] for y in x_value]
-plt.plot(x_value,y_value,color='r')
-plt.xticks(np.arange(5,30,step=5))
-plt.yticks(np.arange(-5,30,step=5))
-plt.xlabel("Population of City (10,000s)")
-plt.ylabel("Profit ($10,000")
-plt.title("Profit Prediction")
+# Training the model
+theta = linear_regression(scaled_features, scaled_profit)
 
-def predict(x,theta):
-  predictions= np.dot(theta.transpose(),x)
-  return predictions[0]
-  
-predict1=predict(np.array([1,3.5]),theta)*1000
-print("For population = 35,000, we predict a profit of $"+str(round(predict1,0)))
+# Predicting for new input
+new_startup_data = np.array([[165349.2, 136897.8, 471784.1]])  
+scaled_new_data = feature_scaler.transform(new_startup_data)
 
-predict2=predict(np.array([1,7]),theta)*1000
-print("For population = 70,000, we predict a profit of $"+str(round(predict2,0)))
+# Making prediction
+scaled_input = np.append([[1]], scaled_new_data, axis=1) 
+scaled_prediction = scaled_input.dot(theta)
 
-*/
+# Inverse transform to get actual predicted profit
+predicted_profit = profit_scaler.inverse_transform(scaled_prediction)
+
+# Output the predicted profit
+print(f"Predicted Profit for input {new_startup_data[0]}: ${predicted_profit[0][0]:.2f}")
+
 ```
 
 ## Output:
-![image](https://user-images.githubusercontent.com/119389139/230386308-e04bfb79-b231-453b-953e-e45512f79148.png)
-
-![image](https://user-images.githubusercontent.com/119389139/230386410-d4ccb116-c4d8-4c4b-b348-f5ccba787338.png)
-
-![image](https://user-images.githubusercontent.com/119389139/230386510-63de0d84-f31d-4a1c-a9fd-4972f86cf64e.png)
-
-![image](https://user-images.githubusercontent.com/119389139/230386833-3d102068-46b6-479f-83c7-cb87f732526e.png)
-
-![image](https://user-images.githubusercontent.com/119389139/230389941-e78316c2-0ef7-40aa-8a98-036822924a2b.png)
-
-![image](https://user-images.githubusercontent.com/119389139/230390024-44c07657-bcc7-42d7-a710-b70cc6d5917b.png)
-
-![image](https://user-images.githubusercontent.com/119389139/230390104-41a9a384-10fe-4380-ba90-3d133ea40167.png)
-
-
+![Screenshot 2025-04-07 153327](https://github.com/user-attachments/assets/b640132d-364b-4a65-b8da-98b93a269a17)
 
 ## Result:
 Thus the program to implement the linear regression using gradient descent is written and verified using python programming.
